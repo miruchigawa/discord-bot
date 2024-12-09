@@ -1,0 +1,13 @@
+[project]
+name = "interface"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "aioconsole>=0.8.1",
+    "discord-py>=2.4.0",
+    "motor>=3.6.0",
+    "psutil>=6.1.0",
+    "python-dotenv>=1.0.1",
+]
