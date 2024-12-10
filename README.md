@@ -1,30 +1,59 @@
 # Discord Bot Template
-Modular Discord bot with economy, leveling, and more.
+A modular Discord bot featuring economy system, anime interactions, and administrative tools.
+
+## Features
+- Economy system with experience, levels, and currency
+- Anime-themed interaction commands using waifu.it API
+- Administrative tools for server management
+- Interactive CLI interface for bot management
+- Detailed logging system
+- MongoDB integration for data persistence
 
 ## Setup
-1. Create a new Discord bot and get the token.
-2. Create a new MongoDB database and get the connection string.
-3. Copy `.env.example` to `.env` and modify the values:
+1. Create a new Discord bot and get the token
+2. Create a new MongoDB database and get the connection string
+3. Create a waifu.it account and get API token
+4. Copy `.env.example` to `.env` and modify the values:
    ```
    DISCORD_TOKEN=<your discord bot token>
    MONGO_URI=<your mongodb connection string>
    DB_NAME=<your database name>
+   WAIFU_IT_TOKEN=<your waifu.it api token>
    ```
-4. Sync module with `uv sync`
-5. Run the bot with `uv run main.py`
+5. Sync module with `uv sync`
+6. Run the bot with `uv run main.py`
 
 ## Project Structure
-| Folder | Description |
+| Folder/File | Description |
 | --- | --- |
-| `cogs/` | Cogs for the bot. |
-| `utils/` | Utility functions and classes. |
-| `main.py` | Main entry point for the bot. |
-| `config.py` | Configuration settings. |
-| `README.md` | This file. |
+| `cogs/` | Bot command modules (economy, anime, admin) |
+| `utils/` | Utility classes (database, logger, helper) |
+| `lib/` | External library wrappers |
+| `main.py` | Main bot initialization and CLI interface |
+| `config.py` | Centralized configuration management |
 
+## Available Commands
+
+### Economy Commands
+- `profile` - View user level, exp and balance
+- `leaderboard` - Server rankings by exp
+- `daily` - Claim daily rewards (exp or money)
+- `give` - Transfer money to other users
+
+### Anime Commands
+- `hug` - Send hugging anime GIF
+- `pat` - Send headpatting anime GIF
+- `kiss` - Send kissing anime GIF
+- `cry` - Send crying anime GIF
+- `neko` - Send random neko image
+
+### Admin Commands
+- `serverinfo` - Display detailed server information
+- `ban` - Ban a member from the server
+- `unban` - Unban a user from the server
 
 ## Creating Cogs
-Cogs are modules that help organize bot commands and listeners. Here's how to create a new cog:
+Cogs help organize bot commands and listeners. Here's how to create a new cog:
 
 1. Create a new file in the `cogs` folder (e.g. `mycog.py`)
 
@@ -50,7 +79,7 @@ Cogs are modules that help organize bot commands and listeners. Here's how to cr
    await bot.load_extension("cogs.mycog")
    ```
 
-4. Key components to know:
+4. Key components:
    - `commands.Cog` - Base class for all cogs
    - `@commands.hybrid_command()` - Creates slash + text commands
    - `@commands.Cog.listener()` - For event listeners
@@ -62,7 +91,13 @@ Cogs are modules that help organize bot commands and listeners. Here's how to cr
    - Handle errors appropriately
    - Follow the existing code style
 
-For more examples, check the existing cogs in the `cogs/` folder.
+## CLI Commands
+- `help` - Show available CLI commands
+- `status` - Show bot status (name, latency, guilds)
+- `metrics` - Show system metrics (CPU, RAM, disk)
+- `reload` - Reload all cogs
+- `clear` - Clear console screen
+- `quit/exit` - Shutdown bot
 
 ## License
 This project is open-sourced under the Apache 2.0 License - see the [LICENSE] file for details.
@@ -71,4 +106,4 @@ This project is open-sourced under the Apache 2.0 License - see the [LICENSE] fi
 Contributions are welcome! Please feel free to submit a pull request.
 
 ## Contact
-For any questions or feedback, please contact the project maintainer at [miruchigawa@outlook.jp].
+For questions or feedback, please contact the project maintainer at [miruchigawa@outlook.jp].
