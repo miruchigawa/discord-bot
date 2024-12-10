@@ -63,33 +63,40 @@ Cogs help organize bot commands and listeners. Here's how to create a new cog:
    from discord.ext import commands
 
    class MyCog(commands.Cog):
-       def __init__(self, bot):
+       """Description of your cog's purpose"""
+       
+       def __init__(self, bot: commands.Bot) -> None:
            self.bot = bot
            
        @commands.hybrid_command(name="mycommand")
-       async def my_command(self, ctx):
+       async def my_command(self, ctx: commands.Context) -> None:
+           """Command description"""
            await ctx.send("Hello!")
            
-   async def setup(bot):
+   async def setup(bot: commands.Bot) -> None:
        await bot.add_cog(MyCog(bot))
    ```
 
-3. Register your cog in `main.py`:
-   ```python
-   await bot.load_extension("cogs.mycog")
-   ```
+3. The cog will be automatically loaded by the bot as it scans the `cogs/` directory on startup. No manual registration needed.
 
 4. Key components:
    - `commands.Cog` - Base class for all cogs
    - `@commands.hybrid_command()` - Creates slash + text commands
    - `@commands.Cog.listener()` - For event listeners
    - `async def setup()` - Required to load the cog
+   - Type hints for better code clarity
 
 5. Best practices:
    - Keep related commands in the same cog
-   - Add docstrings to your commands
+   - Add docstrings to your commands and classes
    - Handle errors appropriately
+   - Use type hints consistently
    - Follow the existing code style
+
+6. Reloading cogs:
+   - Use the CLI command `reload` to reload all cogs
+   - This will unload existing cogs and load them again
+   - Useful during development
 
 ## CLI Commands
 - `help` - Show available CLI commands
