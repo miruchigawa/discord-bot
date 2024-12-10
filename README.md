@@ -100,10 +100,10 @@ Cogs help organize bot commands and listeners. Here's how to create a new cog:
 - `quit/exit` - Shutdown bot
 
 ## License
-This project is open-sourced under the Apache 2.0 License - see the [LICENSE] file for details.
+This project is open-sourced under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a pull request.
 
 ## Contact
-For questions or feedback, please contact the project maintainer at [miruchigawa@outlook.jp].
+For questions or feedback, please contact the project maintainer at [miruchigawa@outlook.jp](mailto:miruchigawa@outlook.jp).
