@@ -1,9 +1,10 @@
 # Discord Bot Template
-A modular Discord bot featuring economy system, anime interactions, and administrative tools.
+A modular Discord bot featuring economy system, anime interactions, AI image generation, and administrative tools.
 
 ## Features
 - Economy system with experience, levels, and currency
 - Anime-themed interaction commands using waifu.it API
+- AI image generation using Stable Diffusion
 - Administrative tools for server management
 - Interactive CLI interface for bot management
 - Detailed logging system
@@ -13,22 +14,24 @@ A modular Discord bot featuring economy system, anime interactions, and administ
 1. Create a new Discord bot and get the token
 2. Create a new MongoDB database and get the connection string
 3. Create a waifu.it account and get API token
-4. Copy `.env.example` to `.env` and modify the values:
+4. Set up Stable Diffusion API endpoint
+5. Copy `.env.example` to `.env` and modify the values:
    ```
    DISCORD_TOKEN=<your discord bot token>
    MONGO_URI=<your mongodb connection string>
    DB_NAME=<your database name>
    WAIFU_IT_TOKEN=<your waifu.it api token>
+   STABLE_DIFFUSION_URL=<your stable diffusion api url>
    ```
-5. Sync module with `uv sync`
-6. Run the bot with `uv run main.py`
+6. Sync module with `uv sync`
+7. Run the bot with `uv run main.py`
 
 ## Project Structure
 | Folder/File | Description |
 | --- | --- |
-| `cogs/` | Bot command modules (economy, anime, admin) |
+| `cogs/` | Bot command modules (economy, anime, admin, wfx) |
 | `utils/` | Utility classes (database, logger, helper) |
-| `lib/` | External library wrappers |
+| `lib/` | External library wrappers (stablediffusion, waifuit) |
 | `main.py` | Main bot initialization and CLI interface |
 | `config.py` | Centralized configuration management |
 
@@ -46,6 +49,10 @@ A modular Discord bot featuring economy system, anime interactions, and administ
 - `kiss` - Send kissing anime GIF
 - `cry` - Send crying anime GIF
 - `neko` - Send random neko image
+
+### AI Image Generation Commands
+- `wfx generate` - Generate anime-style images (costs 100 money)
+- `wfx models` - Show available Stable Diffusion models
 
 ### Admin Commands
 - `serverinfo` - Display detailed server information
