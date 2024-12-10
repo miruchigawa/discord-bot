@@ -14,7 +14,7 @@ class Config:
         MONGO_URI: MongoDB connection string
         DB_NAME: MongoDB database name
         WAIFU_IT_TOKEN: Authentication token for waifu.it API
-        
+        STABLE_DIFFUSION_URL: URL for Stable Diffusion API
     Usage:
         from config import Config
         
@@ -33,7 +33,8 @@ class Config:
     MONGO_URI = os.getenv('MONGO_URI')
     DB_NAME = os.getenv('DB_NAME')
     WAIFU_IT_TOKEN = os.getenv('WAIFU_IT_TOKEN')
-    
+    STABLE_DIFFUSION_URL = os.getenv('STABLE_DIFFUSION_URL')
+
     @classmethod
     def validate(cls) -> None:
         """Validates presence of all required environment variables
@@ -48,7 +49,8 @@ class Config:
             'DISCORD_TOKEN': cls.DISCORD_TOKEN,
             'MONGO_URI': cls.MONGO_URI,
             'DB_NAME': cls.DB_NAME,
-            'WAIFU_IT_TOKEN': cls.WAIFU_IT_TOKEN
+            'WAIFU_IT_TOKEN': cls.WAIFU_IT_TOKEN,
+            'STABLE_DIFFUSION_URL': cls.STABLE_DIFFUSION_URL
         }
         
         missing = [var for var, value in required_vars.items() if not value]

@@ -1,3 +1,4 @@
 DISCORD_TOKEN=<discord token>
 MONGO_URI=<mongodb url>
 DB_NAME=<db name>
+STABLE_DIFFUSION_URL=<stable diffusion url>
