@@ -2,6 +2,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional, Dict, Any, List
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 class Database:
     """Database management class for user data.
@@ -78,7 +79,8 @@ class Database:
             **query,
             "exp": 0,
             "level": 1,
-            "money": 0
+            "money": 0,
+            "last_daily": None
         }
         await self.db.users.update_one(
             query,
@@ -150,3 +152,17 @@ class Database:
         ).sort("exp", -1).limit(limit)
         
         return await cursor.to_list(length=limit)
+
+    async def update_daily_timestamp(self, user_id: int, guild_id: int) -> None:
+        """Update user's last daily claim timestamp.
+        
+        Args:
+            user_id: Discord user ID
+            guild_id: Discord guild ID
+        """
+        query = {"user_id": user_id, "guild_id": guild_id}
+        now = datetime.utcnow().isoformat()
+        await self.db.users.update_one(
+            query,
+            {"$set": {"last_daily": now}}
+        )

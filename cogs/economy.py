@@ -26,6 +26,7 @@ class Economy(commands.Cog):
         self.exp_range = (5, 15)
         self.daily_money = 500
         self.daily_exp = 1000
+        self.daily_cooldown = timedelta(days=1)  # 24 hours cooldown
 
     async def _ensure_user_exists(self, user_id: int, guild_id: int) -> Dict[str, Any]:
         """Ensure a user exists in the database, create if not.
@@ -123,6 +124,49 @@ class Economy(commands.Cog):
                 )
         return embed
 
+    async def _check_daily_cooldown(self, user_id: int, guild_id: int) -> tuple[bool, Optional[timedelta]]:
+        """Check if user can claim daily reward.
+        
+        Parameters
+        ----------
+        user_id : int
+            Discord user ID
+        guild_id : int
+            Discord guild ID
+            
+        Returns
+        -------
+        tuple[bool, Optional[timedelta]]
+            (can_claim, time_remaining)
+        """
+        data = await self._ensure_user_exists(user_id, guild_id)
+        last_daily = data.get('last_daily')
+        
+        if not last_daily:
+            return True, None
+            
+        now = datetime.utcnow()
+        last_claim = datetime.fromisoformat(last_daily)
+        time_passed = now - last_claim
+        
+        if time_passed >= self.daily_cooldown:
+            return True, None
+            
+        time_remaining = self.daily_cooldown - time_passed
+        return False, time_remaining
+
+    async def _update_daily_timestamp(self, user_id: int, guild_id: int) -> None:
+        """Update user's last daily claim timestamp.
+        
+        Parameters
+        ----------
+        user_id : int
+            Discord user ID
+        guild_id : int
+            Discord guild ID
+        """
+        await self.bot.db.update_daily_timestamp(user_id, guild_id)
+
     @commands.Cog.listener()
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def on_message(self, message: discord.Message):
@@ -194,19 +238,33 @@ class Economy(commands.Cog):
                 Whether the reward is money (True) or exp (False)
             """
             if interaction.user.id != self.ctx.author.id:
-                return await interaction.response.send_message("This isn't your reward to claim!", ephemeral=True)
+                return await interaction.response.send_message(
+                    "This isn't your reward to claim!", 
+                    ephemeral=True
+                )
 
             if is_money:
-                new_balance = await self.ctx.bot.db.add_money(self.ctx.author.id, self.ctx.guild.id, self.cog.daily_money)
+                new_balance = await self.ctx.bot.db.add_money(
+                    self.ctx.author.id, 
+                    self.ctx.guild.id, 
+                    self.cog.daily_money
+                )
                 embed = discord.Embed(
                     title="💰 Daily Reward Claimed!",
                     description=f"You received ${self.cog.daily_money}!\nNew balance: ${new_balance}",
                     color=discord.Color.green()
                 )
             else:
-                user_data = await self.ctx.bot.db.get_user(self.ctx.author.id, self.ctx.guild.id)
+                user_data = await self.ctx.bot.db.get_user(
+                    self.ctx.author.id, 
+                    self.ctx.guild.id
+                )
                 current_exp = user_data['exp'] + self.cog.daily_exp
-                updated_data = await self.ctx.bot.db.update_exp(self.ctx.author.id, self.ctx.guild.id, current_exp)
+                updated_data = await self.ctx.bot.db.update_exp(
+                    self.ctx.author.id, 
+                    self.ctx.guild.id, 
+                    current_exp
+                )
                 embed = discord.Embed(
                     title="✨ Daily Reward Claimed!",
                     description=f"You received {self.cog.daily_exp} EXP!\nNew level: {updated_data['level']}\nTotal EXP: {updated_data['exp']}",
@@ -228,7 +286,6 @@ class Economy(commands.Cog):
             await self._handle_reward_claim(interaction, False)
 
     @commands.hybrid_command(name="daily", description="Claim your daily reward")
-    @commands.cooldown(1, 86400, commands.BucketType.user)
     async def daily(self, ctx: commands.Context):
         """Claim your daily reward - choose between EXP or money.
         
@@ -237,6 +294,15 @@ class Economy(commands.Cog):
         ctx : commands.Context
             The invocation context
         """
+        can_claim, time_remaining = await self._check_daily_cooldown(ctx.author.id, ctx.guild.id)
+        
+        if not can_claim:
+            hours, remainder = divmod(time_remaining.seconds, 3600)
+            minutes, _ = divmod(remainder, 60)
+            return await ctx.reply(
+                f"Please wait **{hours}h {minutes}m** before claiming your next daily reward!"
+            )
+
         view = self.RewardButtons(self, ctx)
         embed = discord.Embed(
             title="🎁 Daily Reward",
@@ -247,10 +313,11 @@ class Economy(commands.Cog):
         message = await ctx.send(embed=embed, view=view)
         await view.wait()
         
-        if not view.value:
-            embed.description = "Reward expired! Try again tomorrow."
+        if view.value:
+            await self._update_daily_timestamp(ctx.author.id, ctx.guild.id)
+        else:
+            embed.description = "Reward expired! Try again!"
             await message.edit(embed=embed, view=None)
-            ctx.command.reset_cooldown(ctx)
 
     @commands.hybrid_command(name="give", description="Give money to another user")
     async def give(self, ctx: commands.Context, member: discord.Member, amount: int):
@@ -272,6 +339,10 @@ class Economy(commands.Cog):
             return await ctx.reply("Amount must be positive!")
         
         giver_data = await self._ensure_user_exists(ctx.author.id, ctx.guild.id)
+        receiver_data = await self._ensure_user_exists(member.id, ctx.guild.id)
+
+        if not receiver_data:
+            return await ctx.reply("(◕︿◕✿) Eh? I couldn't find this user in my records~")
         
         if giver_data['money'] < amount:
             return await ctx.reply("You don't have enough money!")

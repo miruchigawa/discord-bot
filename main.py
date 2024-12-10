@@ -110,7 +110,7 @@ class DiscordBot:
         try:
             if action == 'load':
                 await self.bot.load_extension(extension)
-            else:  # unload
+            else:  
                 await self.bot.unload_extension(extension)
             self.logger.info(f'✨ Successfully {action}ed cog: {extension}')
             return True
@@ -162,7 +162,7 @@ class DiscordBot:
 
     async def _shutdown(self) -> None:
         """Gracefully shutdown the bot and cleanup resources"""
-        if not self.running:  # Prevent multiple shutdown attempts
+        if not self.running:
             return
             
         self.running = False
@@ -173,7 +173,7 @@ class DiscordBot:
         except Exception as e:
             self.logger.error(f"Error during shutdown: {str(e)}")
         finally:
-            await asyncio.sleep(0.5)  # Brief pause for cleanup
+            await asyncio.sleep(0.5) 
             sys.exit(0)
 
     async def handle_reload(self) -> None:
