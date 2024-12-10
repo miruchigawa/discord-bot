@@ -21,7 +21,7 @@ class Logger:
         backup_count (int): Number of backup log files to keep. Defaults to 5
     """
 
-    def __init__(self, name: str = "bot", log_dir: str = "logs", max_bytes: int = 5_242_880, backup_count: int = 5) -> None:
+    def __init__(self, name: str = "bot", log_dir: str = ".logs", max_bytes: int = 5_242_880, backup_count: int = 5) -> None:
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 

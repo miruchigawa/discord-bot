@@ -1,8 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional, Dict, Any, List
-import os
-from dotenv import load_dotenv
 from datetime import datetime
+from config import Config
 
 class Database:
     """Database management class for user data.
@@ -13,21 +12,12 @@ class Database:
     Attributes:
         client (AsyncIOMotorClient): MongoDB client instance
         db (AsyncIOMotorDatabase): Reference to the bot's database
-        mongo_uri (str): MongoDB connection URI from env vars
-        db_name (str): Name of the database to use
-        
-    Note:
-        Requires MONGO_URI and DB_NAME environment variables to be set.
-        Falls back to defaults if not provided.
     """
     
     def __init__(self) -> None:
         """Initialize database connection settings."""
-        load_dotenv()
         self.client: Optional[AsyncIOMotorClient] = None
         self.db = None
-        self.mongo_uri: str = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
-        self.db_name: str = os.getenv('DB_NAME', 'discord_bot')
 
     async def connect(self) -> None:
         """Create database connection and set up indexes.
@@ -35,8 +25,8 @@ class Database:
         Creates a compound index on user_id and guild_id to ensure
         unique user entries per guild.
         """
-        self.client = AsyncIOMotorClient(self.mongo_uri)
-        self.db = self.client[self.db_name]
+        self.client = AsyncIOMotorClient(Config.MONGO_URI)
+        self.db = self.client[Config.DB_NAME]
         await self.db.users.create_index([("user_id", 1), ("guild_id", 1)], unique=True)
 
     async def _get_user_query(self, user_id: int, guild_id: int) -> Dict[str, int]:
@@ -98,9 +88,6 @@ class Database:
             
         Returns:
             Updated user document
-            
-        Note:
-            Level calculation uses a 1.5x multiplier for each level
         """
         level = 1
         exp_needed = 100
@@ -160,7 +147,7 @@ class Database:
             user_id: Discord user ID
             guild_id: Discord guild ID
         """
-        query = {"user_id": user_id, "guild_id": guild_id}
+        query = await self._get_user_query(user_id, guild_id)
         now = datetime.utcnow().isoformat()
         await self.db.users.update_one(
             query,

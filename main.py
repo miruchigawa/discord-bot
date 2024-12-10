@@ -12,6 +12,7 @@ from utils.helper import Help
 from typing import Dict, Callable, Awaitable, Optional, List, Any
 import signal
 from utils.database import Database
+from config import Config
 
 class DiscordBot:
     """A Discord bot class that handles events, commands, and CLI operations.
@@ -24,17 +25,15 @@ class DiscordBot:
     """
     
     def __init__(self) -> None:
-        self._setup_env()
+        self._validate_config()
         self._setup_bot()
         self._setup_signal_handlers()
         self.bot.db = None
         
-    def _setup_env(self) -> None:
-        """Set up environment variables"""
-        load_dotenv()
-        self.token: str = os.getenv('DISCORD_TOKEN')
-        if not self.token:
-            raise ValueError("⚠️ Bot token not found in .env file!")
+    def _validate_config(self) -> None:
+        """Validate configuration"""
+        Config.validate()
+        self.token: str = Config.DISCORD_TOKEN
 
     def _setup_bot(self) -> None:
         """Set up bot instance and configurations"""
