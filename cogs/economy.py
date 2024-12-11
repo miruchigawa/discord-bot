@@ -8,8 +8,8 @@ class Economy(commands.Cog):
     """Economy system for managing user experience, levels and currency.
     
     This cog handles all economy-related features including:
-    - Experience and leveling system
-    - Currency management 
+    - Experience and leveling system 
+    - Currency management
     - Daily rewards
     - User profiles and leaderboards
     """
@@ -63,8 +63,8 @@ class Economy(commands.Cog):
         """
         if old_data and new_data['level'] > old_data['level']:
             embed = discord.Embed(
-                title="✨ Level Up!",
-                description=f"Congratulations {message.author.mention}! You've reached level {new_data['level']}!",
+                title="✧･ﾟ: *✧･ﾟ LEVEL UP! ･ﾟ✧*:･ﾟ✧",
+                description=f"(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ Sugoi! {message.author.mention}-chan leveled up to level {new_data['level']}! Keep going~! ♪",
                 color=discord.Color.gold()
             )
             await message.channel.send(embed=embed)
@@ -85,13 +85,14 @@ class Economy(commands.Cog):
             The formatted profile embed
         """
         embed = discord.Embed(
-            title=f"Profile for {member.display_name}",
-            color=discord.Color.blue()
+            title=f"✧･ﾟ {member.display_name}'s Profile ･ﾟ✧",
+            color=discord.Color.pink()
         )
-        embed.add_field(name="Level", value=str(data['level']))
-        embed.add_field(name="Experience", value=str(data['exp']))
-        embed.add_field(name="Money", value=f"${data['money']}")
+        embed.add_field(name="✨ Level", value=f"Level {data['level']} desu~!")
+        embed.add_field(name="⭐ Experience", value=f"{data['exp']} EXP collected!")
+        embed.add_field(name="💰 Money", value=f"${data['money']} in the piggy bank!")
         embed.set_thumbnail(url=member.display_avatar.url)
+        embed.set_footer(text="(｡♥‿♥｡) Keep being amazing! ♪")
         return embed
 
     async def _create_leaderboard_embed(self, guild: discord.Guild, data: list) -> discord.Embed:
@@ -110,18 +111,21 @@ class Economy(commands.Cog):
             The formatted leaderboard embed
         """
         embed = discord.Embed(
-            title="🏆 Server Leaderboard",
+            title="✧･ﾟ: *✧･ﾟ Server Rankings! ･ﾟ✧*:･ﾟ✧",
+            description="(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ Our amazing members~!",
             color=discord.Color.gold()
         )
         
         for idx, entry in enumerate(data, 1):
             user = guild.get_member(entry['user_id'])
             if user:
+                crown = "👑" if idx == 1 else "✨"
                 embed.add_field(
-                    name=f"#{idx} {user.display_name}",
-                    value=f"Level: {entry['level']}\nExp: {entry['exp']}\nMoney: ${entry['money']}",
+                    name=f"{crown} #{idx} {user.display_name}",
+                    value=f"Level: {entry['level']} ⭐\nExp: {entry['exp']} ✨\nMoney: ${entry['money']} 💰",
                     inline=False
                 )
+        embed.set_footer(text="(｡♥‿♥｡) Everyone is doing their best! Ganbare~! ♪")
         return embed
 
     async def _check_daily_cooldown(self, user_id: int, guild_id: int) -> tuple[bool, Optional[timedelta]]:
@@ -189,7 +193,7 @@ class Economy(commands.Cog):
         updated_data = await self.bot.db.update_exp(message.author.id, message.guild.id, current_exp)
         await self._handle_level_up(message, user_data, updated_data)
 
-    @commands.hybrid_command(name="profile", description="Show your or another user's profile")
+    @commands.hybrid_command(name="profile", description="Show your or another user's profile~!")
     async def profile(self, ctx: commands.Context, member: Optional[discord.Member] = None):
         """Shows the profile of a user including their level, exp and money.
         
@@ -205,7 +209,7 @@ class Economy(commands.Cog):
         embed = await self._create_profile_embed(target, data)
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="leaderboard", description="Show server leaderboard")
+    @commands.hybrid_command(name="leaderboard", description="Check out our amazing server rankings~!")
     async def leaderboard(self, ctx: commands.Context):
         """Displays the server's leaderboard showing top users by level and wealth.
         
@@ -239,7 +243,7 @@ class Economy(commands.Cog):
             """
             if interaction.user.id != self.ctx.author.id:
                 return await interaction.response.send_message(
-                    "This isn't your reward to claim!", 
+                    "(｡•́︿•̀｡) Gomen ne~ This isn't your reward to claim!", 
                     ephemeral=True
                 )
 
@@ -250,8 +254,8 @@ class Economy(commands.Cog):
                     self.cog.daily_money
                 )
                 embed = discord.Embed(
-                    title="💰 Daily Reward Claimed!",
-                    description=f"You received ${self.cog.daily_money}!\nNew balance: ${new_balance}",
+                    title="💰 Yatta! Daily Reward Get! 💰",
+                    description=f"(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ You received ${self.cog.daily_money}!\nNew balance: ${new_balance}",
                     color=discord.Color.green()
                 )
             else:
@@ -266,8 +270,8 @@ class Economy(commands.Cog):
                     current_exp
                 )
                 embed = discord.Embed(
-                    title="✨ Daily Reward Claimed!",
-                    description=f"You received {self.cog.daily_exp} EXP!\nNew level: {updated_data['level']}\nTotal EXP: {updated_data['exp']}",
+                    title="✨ Sugoi! Daily Reward Get! ✨",
+                    description=f"(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ You received {self.cog.daily_exp} EXP!\nLevel: {updated_data['level']}\nTotal EXP: {updated_data['exp']}",
                     color=discord.Color.blue()
                 )
 
@@ -285,7 +289,7 @@ class Economy(commands.Cog):
             """EXP reward button handler."""
             await self._handle_reward_claim(interaction, False)
 
-    @commands.hybrid_command(name="daily", description="Claim your daily reward")
+    @commands.hybrid_command(name="daily", description="Claim your adorable daily reward~!")
     async def daily(self, ctx: commands.Context):
         """Claim your daily reward - choose between EXP or money.
         
@@ -300,13 +304,13 @@ class Economy(commands.Cog):
             hours, remainder = divmod(time_remaining.seconds, 3600)
             minutes, _ = divmod(remainder, 60)
             return await ctx.reply(
-                f"Please wait **{hours}h {minutes}m** before claiming your next daily reward!"
+                f"(｡•́︿•̀｡) Gomen ne~ Please wait **{hours}h {minutes}m** before claiming your next daily reward!"
             )
 
         view = self.RewardButtons(self, ctx)
         embed = discord.Embed(
-            title="🎁 Daily Reward",
-            description=f"Choose your reward:\n💰 ${self.daily_money} Money\n✨ {self.daily_exp} EXP",
+            title="🎁 Magical Daily Reward Time! 🎁",
+            description=f"(◕‿◕✿) Choose your reward:\n💰 ${self.daily_money} Money\n✨ {self.daily_exp} EXP",
             color=discord.Color.gold()
         )
         
@@ -316,10 +320,10 @@ class Economy(commands.Cog):
         if view.value:
             await self._update_daily_timestamp(ctx.author.id, ctx.guild.id)
         else:
-            embed.description = "Reward expired! Try again!"
+            embed.description = "(｡•́︿•̀｡) Oh no! The reward expired! Try again~!"
             await message.edit(embed=embed, view=None)
 
-    @commands.hybrid_command(name="give", description="Give money to another user")
+    @commands.hybrid_command(name="give", description="Share your money with friends~!")
     async def give(self, ctx: commands.Context, member: discord.Member, amount: int):
         """Give money to another user.
         
@@ -333,10 +337,10 @@ class Economy(commands.Cog):
             Amount of money to give
         """
         if member.bot:
-            return await ctx.reply("You can't give money to bots!")
+            return await ctx.reply("(｡•́︿•̀｡) Gomen ne~ You can't give money to bots!")
         
         if amount <= 0:
-            return await ctx.reply("Amount must be positive!")
+            return await ctx.reply("(｡•́︿•̀｡) The amount must be positive, silly~!")
         
         giver_data = await self._ensure_user_exists(ctx.author.id, ctx.guild.id)
         receiver_data = await self._ensure_user_exists(member.id, ctx.guild.id)
@@ -345,15 +349,15 @@ class Economy(commands.Cog):
             return await ctx.reply("(◕︿◕✿) Eh? I couldn't find this user in my records~")
         
         if giver_data['money'] < amount:
-            return await ctx.reply("You don't have enough money!")
+            return await ctx.reply("(｡T ω T｡) You don't have enough money, poor thing~!")
         
         await self.bot.db.add_money(ctx.author.id, ctx.guild.id, -amount)
         await self.bot.db.add_money(member.id, ctx.guild.id, amount)
         
         embed = discord.Embed(
-            title="💸 Money Transfer",
-            description=f"{ctx.author.mention} gave ${amount} to {member.mention}!",
-            color=discord.Color.green()
+            title="💝 Generous Gift! 💝",
+            description=f"(｡♥‿♥｡) {ctx.author.mention} gave ${amount} to {member.mention}! So kind~!",
+            color=discord.Color.pink()
         )
         await ctx.reply(embed=embed)
 

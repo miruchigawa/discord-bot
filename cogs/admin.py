@@ -3,6 +3,7 @@ from discord.ext import commands
 import os
 import sys
 import textwrap
+import psutil
 from io import StringIO
 from typing import Dict, Any, Optional
 
@@ -19,29 +20,84 @@ class Admin(commands.Cog):
         guild: discord.Guild = ctx.guild
         
         embed: discord.Embed = discord.Embed(
-            title=f"Server Information: {guild.name}",
-            color=discord.Color.blue()
+            title=f"✧･ﾟ: *✧･ﾟ Server Info for {guild.name} ･ﾟ✧*:･ﾟ✧",
+            color=discord.Color.pink()
         )
         
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)
 
         stats: Dict[str, str] = {
-            "Members": f"Total: {len(guild.members)}\n"
-                      f"Humans: {len([m for m in guild.members if not m.bot])}\n"
-                      f"Bots: {len([m for m in guild.members if m.bot])}",
-            "Channels": f"Text: {len(guild.text_channels)}\n"
-                       f"Voice: {len(guild.voice_channels)}\n"
-                       f"Categories: {len(guild.categories)}",
-            "Server Details": f"ID: {guild.id}\n"
-                            f"Owner: {guild.owner.mention}\n"
-                            f"Created: {guild.created_at.strftime('%Y-%m-%d')}"
+            "🌸 Members": f"Total: {len(guild.members)}\n"
+                      f"Humans: {len([m for m in guild.members if not m.bot])} 👥\n"
+                      f"Bots: {len([m for m in guild.members if m.bot])} 🤖",
+            "💫 Channels": f"Text: {len(guild.text_channels)} 📝\n"
+                       f"Voice: {len(guild.voice_channels)} 🎤\n"
+                       f"Categories: {len(guild.categories)} 📁",
+            "✨ Server Details": f"ID: {guild.id}\n"
+                            f"Owner: {guild.owner.mention} 👑\n"
+                            f"Created: {guild.created_at.strftime('%Y-%m-%d')} 🎂"
         }
 
         for name, value in stats.items():
             embed.add_field(name=name, value=value, inline=True)
 
+        embed.set_footer(text="(｡♥‿♥｡) Thanks for checking our server info!")
         await ctx.send(embed=embed)
+
+    @commands.command(name='sysinfo')
+    @commands.has_permissions(administrator=True)
+    async def system_info(self, ctx: commands.Context) -> None:
+        """Display system resource information"""
+        cpu_percent = psutil.cpu_percent()
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        embed = discord.Embed(
+            title="(◕‿◕✿) System Information Desu~",
+            color=discord.Color.pink()
+        )
+        
+        embed.add_field(
+            name="💻 CPU-chan Usage",
+            value=f"{cpu_percent}% *\*working hard\**",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🎀 Memory-chan Status",
+            value=f"Total: {memory.total // (1024**3)}GB\n"
+                  f"Used: {memory.used // (1024**3)}GB ({memory.percent}%) *\*ganbarimasu\**\n"
+                  f"Free: {memory.free // (1024**3)}GB *\*still available\**",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="💾 Disk-chan Space",
+            value=f"Total: {disk.total // (1024**3)}GB\n"
+                  f"Used: {disk.used // (1024**3)}GB ({disk.percent}%) *\*nom nom\**\n"
+                  f"Free: {disk.free // (1024**3)}GB *\*still hungry\**",
+            inline=False
+        )
+        
+        embed.set_footer(text="(｡◕‿◕｡) Your system is doing its best!")
+        await ctx.send(embed=embed)
+
+    @commands.command(name='reload')
+    @commands.is_owner()
+    async def reload_cog(self, ctx: commands.Context, cog: str) -> None:
+        """Reload a specific cog
+        
+        Parameters
+        ----------
+        cog: The name of the cog to reload
+        """
+        try:
+            extension = f"cogs.{cog}" if not cog.startswith("cogs.") else cog
+            await self.bot.reload_extension(extension)
+            await ctx.send(f"(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ Yatta! Successfully reloaded {cog}! Time for more fun~!")
+        except Exception as e:
+            await ctx.send(f"(｡•́︿•̀｡) Uwaaah! Failed to reload {cog}: {str(e)}")
 
     @commands.command(name='shell')
     @commands.is_owner()
@@ -50,20 +106,26 @@ class Admin(commands.Cog):
         try:
             output: str = os.popen(command).read()
             if not output:
-                return await ctx.send("Command executed successfully.")
+                return await ctx.send("(◕‿◕✿) Command executed successfully, Master!")
                 
             if len(output) > 1990:
                 output = f"{output[:1990]}..."
                 
-            await ctx.send(f"```\n{output}\n```")
+            await ctx.send(f"```\n{output}\n```\n(｡♥‿♥｡) Here's your output, Master!")
             
         except Exception as e:
-            await ctx.send(f"Error: {str(e)}")
+            await ctx.send(f"(╥﹏╥) Gomenasai Master! There was an error: {str(e)}")
 
     @commands.command(name='debug')
     @commands.is_owner()
     async def debug(self, ctx: commands.Context, *, code: str) -> None:
-        """Evaluate Python code (Owner only)"""
+        """
+        Evaluate Python code (Owner only)
+        
+        Parameters
+        ----------
+        code: The Python code to evaluate
+        """
         env: Dict[str, Any] = {
             'bot': self.bot,
             'ctx': ctx,
@@ -86,12 +148,12 @@ class Admin(commands.Cog):
             output: str = stdout.getvalue()
             
             if result is not None:
-                await ctx.send(f"```python\n{result}```")
+                await ctx.send(f"```python\n{result}```\n(✿◠‿◠) Code executed successfully, Master!")
             if output:
-                await ctx.send(f"```\n{output}```")
+                await ctx.send(f"```\n{output}```\n(◕‿◕✿) Here's your output, Master!")
                 
         except Exception as e:
-            await ctx.send(f"```\nError: {str(e)}```")
+            await ctx.send(f"```\n(｡•́︿•̀｡) Gomenasai! Error: {str(e)}```")
         finally:
             sys.stdout = sys.__stdout__
 
@@ -111,21 +173,21 @@ class Admin(commands.Cog):
         reason: The reason for the ban
         """
         if member.top_role >= ctx.author.top_role:
-            return await ctx.reply("(｡•́︿•̀｡) Gomen ne~ I can't ban someone with a higher or equal role to yours!")
+            return await ctx.reply("(｡•́︿•̀｡) Gomen ne~ I can't ban someone with a higher or equal role to yours! That would be rude >.<")
             
         try:
             await member.ban(reason=reason)
             embed = discord.Embed(
-                title="(｡T ω T｡) Member Banned!",
-                description=f"*sniff* I had to ban {member.mention}...\n💔 Reason: {reason}",
+                title="(｡T ω T｡) Member Banned! *sniff sniff*",
+                description=f"I had to use my special ban hammer on {member.mention}...\n💔 Reason: {reason}\n\n*wipes tears* I hope they learn their lesson...",
                 color=discord.Color.pink()
             )
-            embed.set_footer(text="Please follow the rules next time~ ♡")
+            embed.set_footer(text="(｡♥‿♥｡) Please follow the rules next time~ We'll miss you! ♡")
             await ctx.reply(embed=embed)
         except discord.Forbidden:
-            await ctx.reply("(╥﹏╥) Oh no! I don't have permission to ban this member...")
+            await ctx.reply("(╥﹏╥) Uwaaah! I don't have permission to ban this member... My powers aren't strong enough!")
         except Exception as e:
-            await ctx.reply(f"(｡•́︿•̀｡) Something went wrong: {str(e)}")
+            await ctx.reply(f"(｡•́︿•̀｡) Oopsie woopsie! Something went wrong: {str(e)}")
 
     @commands.hybrid_command(name="unban", description="Unban a user from the server")
     @commands.has_permissions(ban_members=True)
@@ -154,21 +216,22 @@ class Admin(commands.Cog):
                         user_obj = ban_entry.user
                         break
                 if user_obj is None:
-                    return await ctx.reply("(◕︿◕✿) Eh? I couldn't find this banned user...")
+                    return await ctx.reply("(◕︿◕✿) Eh? I couldn't find this banned user... Did they disappear? (。_。)")
 
             await ctx.guild.unban(user_obj, reason=reason)
             embed = discord.Embed(
-                title="(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ User Unbanned!",
-                description=f"Yatta! {user_obj.mention if hasattr(user_obj, 'mention') else user_obj} has been forgiven and unbanned!\n💕 Reason: {reason}",
+                title="(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ Kawaii Unban Success!",
+                description=f"Yatta! {user_obj.mention if hasattr(user_obj, 'mention') else user_obj} has been forgiven!\n💕 Reason: {reason}\n\n*jumps with joy* Time to celebrate!",
                 color=discord.Color.pink()
             )
-            embed.set_footer(text="Welcome back~ Let's be friends again! ♡")
+            embed.set_footer(text="(｡♥‿♥｡) Welcome back~ Let's be the best of friends again! ♡")
             await ctx.reply(embed=embed)
         except discord.NotFound:
-            await ctx.reply("(◕︿◕✿) Eh? I couldn't find this user...")
+            await ctx.reply("(◕︿◕✿) Eh? I couldn't find this user... Maybe they're playing hide and seek? (。_。)")
         except discord.Forbidden:
-            await ctx.reply("(｡T ω T｡) I don't have permission to unban users...")
+            await ctx.reply("(｡T ω T｡) Gomenasai! I don't have permission to unban users... My magic isn't strong enough!")
         except Exception as e:
-            await ctx.reply(f"(╥﹏╥) Oopsie! Something went wrong: {str(e)}")
+            await ctx.reply(f"(╥﹏╥) Uwaaah! Something went wrong: {str(e)}")
+
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Admin(bot))

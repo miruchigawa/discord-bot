@@ -64,17 +64,32 @@ class Anime(commands.Cog):
 
     @commands.hybrid_command()
     async def hug(self, ctx, member: Optional[discord.Member] = None):
-        """Sends a hugging anime GIF"""
+        """Sends a hugging anime GIF
+        
+        Parameters
+        ----------
+        member: The member to hug, if specified
+        """
         await self._handle_interaction(ctx, "hug", member)
 
     @commands.hybrid_command()
     async def pat(self, ctx, member: Optional[discord.Member] = None):
-        """Sends a headpatting anime GIF"""
+        """Sends a headpatting anime GIF
+        
+        Parameters
+        ----------
+        member: The member to pat, if specified
+        """
         await self._handle_interaction(ctx, "pat", member)
 
     @commands.hybrid_command()
     async def kiss(self, ctx, member: Optional[discord.Member] = None):
-        """Sends a kissing anime GIF"""
+        """Sends a kissing anime GIF
+        
+        Parameters
+        ----------
+        member: The member to kiss, if specified
+        """
         await self._handle_interaction(ctx, "kiss", member)
 
     @commands.hybrid_command()

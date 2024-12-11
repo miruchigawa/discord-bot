@@ -1,16 +1,11 @@
 import discord
 from discord.ext import commands
 import os
-import psutil
 import asyncio
-import platform
-import aioconsole
 import sys
-from dotenv import load_dotenv
 from utils.logger import Logger
 from utils.helper import Help
-from typing import Dict, Callable, Awaitable, Optional, List, Any
-import signal
+from typing import Dict
 from utils.database import Database
 from config import Config
 
@@ -21,13 +16,11 @@ class DiscordBot:
         token (str): The Discord bot token from environment variables
         bot (commands.Bot): The main Discord bot instance
         logger (Logger): Custom logger instance for bot operations
-        running (bool): Flag to control the CLI shell loop
     """
     
     def __init__(self) -> None:
         self._validate_config()
         self._setup_bot()
-        self._setup_signal_handlers()
         self.bot.db = None
         
     def _validate_config(self) -> None:
@@ -47,18 +40,7 @@ class DiscordBot:
             help_command=Help()
         )
         self.logger: Logger = Logger()
-        self.running: bool = True
         self.setup_events()
-
-    def _setup_signal_handlers(self) -> None:
-        """Set up signal handlers for graceful shutdown"""
-        for sig in (signal.SIGINT, signal.SIGTERM):
-            signal.signal(sig, self._signal_handler)
-
-    def _signal_handler(self, signum: int, frame: Any) -> None:
-        """Handle system signals for graceful shutdown"""
-        self.running = False
-        asyncio.create_task(self._shutdown())
 
     def setup_events(self) -> None:
         """Set up bot event handlers for error handling and ready state."""
@@ -86,7 +68,6 @@ class DiscordBot:
 
         await self.load_cogs()
         await self.sync_commands()
-        self.bot.loop.create_task(self.cli_shell())
 
     async def sync_commands(self) -> None:
         """Sync slash commands globally."""
@@ -128,90 +109,6 @@ class DiscordBot:
         """Unload all currently loaded cog extensions."""
         for extension in list(self.bot.extensions):
             await self._manage_extension(extension, 'unload')
-            
-    async def cli_shell(self) -> None:
-        """Start an interactive CLI shell for bot management."""
-        commands: Dict[str, Callable[[], Awaitable[None]]] = {
-            "quit": self._shutdown,
-            "exit": self._shutdown,
-            "reload": self.handle_reload,
-            "status": self.handle_status,
-            "metrics": self.handle_metrics,
-            "help": self.handle_help,
-            "clear": self.handle_clear
-        }
-
-        while self.running:
-            try:
-                command: str = await aioconsole.ainput("🐚 > ")
-                cmd: str = command.lower().strip()
-                
-                if not cmd:
-                    continue
-                    
-                handler: Optional[Callable[[], Awaitable[None]]] = commands.get(cmd)
-                if handler:
-                    await handler()
-                else:
-                    self.logger.warning("❓ Unknown command")
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                self.logger.error(f"❌ Error executing command: {str(e)}")
-
-    async def _shutdown(self) -> None:
-        """Gracefully shutdown the bot and cleanup resources"""
-        if not self.running:
-            return
-            
-        self.running = False
-        self.logger.info("🛑 Shutting down bot...")
-        
-        try:
-            await self.bot.close()
-        except Exception as e:
-            self.logger.error(f"Error during shutdown: {str(e)}")
-        finally:
-            await asyncio.sleep(0.5) 
-            sys.exit(0)
-
-    async def handle_reload(self) -> None:
-        """Reload bot cogs and sync commands"""
-        self.logger.info("🔄 Reloading cogs...")
-        await self.unload_cogs()
-        await self.load_cogs()
-        await self.sync_commands()
-
-    async def handle_status(self) -> None:
-        """Display bot status information"""
-        status_info: str = f'🤖 {self.bot.user.name if self.bot.user else "Not Connected"} | ⚡ {round(self.bot.latency * 1000)}ms | 🌐 {len(self.bot.guilds)}'
-        self.logger.info(status_info)
-
-    async def handle_metrics(self) -> None:
-        """Display system metrics"""
-        cpu_usage: float = psutil.cpu_percent()
-        memory: Any = psutil.virtual_memory()
-        disk: Any = psutil.disk_usage('/')
-        metrics_info: str = f'📊 {cpu_usage}% | 💻 {memory.percent}% | 💾 {disk.percent}%'
-        self.logger.info(metrics_info)
-
-    async def handle_help(self) -> None:
-        """Display available CLI commands and their descriptions."""
-        help_text: str = """
-        Available Commands:
-        - help    : Show this help message
-        - status  : Show bot status (name, latency, guilds)
-        - metrics : Show system metrics (CPU, RAM, disk usage)
-        - reload  : Reload all cogs
-        - clear   : Clear the console screen
-        - quit    : Shutdown the bot
-        - exit    : Alias for quit
-        """
-        self.logger.info(help_text)
-
-    async def handle_clear(self) -> None:
-        """Clear the console screen."""
-        os.system('cls' if platform.system() == 'Windows' else 'clear')
 
     def run(self) -> None:
         """Start the Discord bot."""

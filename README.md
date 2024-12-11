@@ -1,12 +1,11 @@
 # Discord Bot Template
-A modular Discord bot featuring economy system, anime interactions, AI image generation, and administrative tools.
+A kawaii-themed Discord bot featuring economy system, anime interactions, AI image generation, and administrative tools.
 
 ## Features
 - Economy system with experience, levels, and currency
 - Anime-themed interaction commands using waifu.it API
 - AI image generation using Stable Diffusion
 - Administrative tools for server management
-- Interactive CLI interface for bot management
 - Detailed logging system
 - MongoDB integration for data persistence
 
@@ -23,8 +22,8 @@ A modular Discord bot featuring economy system, anime interactions, AI image gen
    WAIFU_IT_TOKEN=<your waifu.it api token>
    STABLE_DIFFUSION_URL=<your stable diffusion api url>
    ```
-6. Sync module with `uv sync`
-7. Run the bot with `uv run main.py`
+6. Install dependencies
+7. Run the bot with `python main.py`
 
 ## Project Structure
 | Folder/File | Description |
@@ -32,7 +31,7 @@ A modular Discord bot featuring economy system, anime interactions, AI image gen
 | `cogs/` | Bot command modules (economy, anime, admin, wfx) |
 | `utils/` | Utility classes (database, logger, helper) |
 | `lib/` | External library wrappers (stablediffusion, waifuit) |
-| `main.py` | Main bot initialization and CLI interface |
+| `main.py` | Main bot initialization |
 | `config.py` | Centralized configuration management |
 
 ## Available Commands
@@ -52,12 +51,19 @@ A modular Discord bot featuring economy system, anime interactions, AI image gen
 
 ### AI Image Generation Commands
 - `wfx generate` - Generate anime-style images (costs 100 money)
+  - Quality options: low, medium, high
+  - Multiple aspect ratios: 1:1, 9:7, 7:9, etc.
+  - Customizable steps and CFG scale
 - `wfx models` - Show available Stable Diffusion models
 
 ### Admin Commands
 - `serverinfo` - Display detailed server information
+- `sysinfo` - Show system resource usage
 - `ban` - Ban a member from the server
 - `unban` - Unban a user from the server
+- `reload` - Reload specific cog (owner only)
+- `shell` - Execute shell commands (owner only)
+- `debug` - Evaluate Python code (owner only)
 
 ## Creating Cogs
 Cogs help organize bot commands and listeners. Here's how to create a new cog:
@@ -68,6 +74,7 @@ Cogs help organize bot commands and listeners. Here's how to create a new cog:
    ```python
    import discord
    from discord.ext import commands
+   from typing import Optional
 
    class MyCog(commands.Cog):
        """Description of your cog's purpose"""
@@ -75,16 +82,19 @@ Cogs help organize bot commands and listeners. Here's how to create a new cog:
        def __init__(self, bot: commands.Bot) -> None:
            self.bot = bot
            
-       @commands.hybrid_command(name="mycommand")
+       @commands.hybrid_command(
+           name="mycommand",
+           description="What this command does"
+       )
        async def my_command(self, ctx: commands.Context) -> None:
            """Command description"""
-           await ctx.send("Hello!")
+           await ctx.send("(◕‿◕✿) Hello!")
            
    async def setup(bot: commands.Bot) -> None:
        await bot.add_cog(MyCog(bot))
    ```
 
-3. The cog will be automatically loaded by the bot as it scans the `cogs/` directory on startup. No manual registration needed.
+3. The cog will be automatically loaded by the bot on startup
 
 4. Key components:
    - `commands.Cog` - Base class for all cogs
@@ -98,26 +108,11 @@ Cogs help organize bot commands and listeners. Here's how to create a new cog:
    - Add docstrings to your commands and classes
    - Handle errors appropriately
    - Use type hints consistently
-   - Follow the existing code style
-
-6. Reloading cogs:
-   - Use the CLI command `reload` to reload all cogs
-   - This will unload existing cogs and load them again
-   - Useful during development
-
-## CLI Commands
-- `help` - Show available CLI commands
-- `status` - Show bot status (name, latency, guilds)
-- `metrics` - Show system metrics (CPU, RAM, disk)
-- `reload` - Reload all cogs
-- `clear` - Clear console screen
-- `quit/exit` - Shutdown bot
+   - Follow the kawaii-themed message style
+   - Implement proper permission checks
 
 ## License
 This project is open-sourced under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a pull request.
-
-## Contact
-For questions or feedback, please contact the project maintainer at [miruchigawa@outlook.jp](mailto:miruchigawa@outlook.jp).
