@@ -233,5 +233,38 @@ class Admin(commands.Cog):
         except Exception as e:
             await ctx.reply(f"(╥﹏╥) Uwaaah! Something went wrong: {str(e)}")
 
+    @commands.command(name='addmoney')
+    @commands.is_owner()
+    async def add_money(
+        self,
+        ctx: commands.Context,
+        member: Optional[discord.Member] = None,
+        amount: int = 0
+    ) -> None:
+        """Add money to a member's balance
+        
+        Parameters
+        ----------
+        member: The member to give money to (optional, defaults to self)
+        amount: The amount of money to add
+        """
+        if amount <= 0:
+            return await ctx.reply("(｡•́︿•̀｡) Oopsie! The amount must be positive!")
+
+        try:
+            target = member or ctx.author
+            new_balance = await self.bot.db.add_money(target.id, ctx.guild.id, amount)
+            
+            embed = discord.Embed(
+                title="(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ Money Added Successfully!",
+                description=f"Added {amount} 💰 to {target.mention}'s balance!\nNew balance: {new_balance} 💰\n\n*throws confetti*",
+                color=discord.Color.pink()
+            )
+            embed.set_footer(text="(｡♥‿♥｡) Spend it wisely~!")
+            await ctx.reply(embed=embed)
+            
+        except Exception as e:
+            await ctx.reply(f"(╥﹏╥) Uwaaah! Something went wrong: {str(e)}")
+            
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Admin(bot))

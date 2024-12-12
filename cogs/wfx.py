@@ -216,7 +216,7 @@ class Wfx(commands.GroupCog, group_name="wfx"):
             file = discord.File(image_data, filename="generated.png")
             
             embed = await self._create_response_embed(
-                title="✨ Your Kawaii Image is Ready! ✨",
+                title="✨ Your Image is Ready! ✨",
                 color=discord.Color.pink(),
                 fields={
                     "🎀 Prompt": quality_data["prompt"],

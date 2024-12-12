@@ -289,7 +289,7 @@ class Economy(commands.Cog):
             """EXP reward button handler."""
             await self._handle_reward_claim(interaction, False)
 
-    @commands.hybrid_command(name="daily", description="Claim your adorable daily reward~!")
+    @commands.hybrid_command(name="daily", description="Claim your daily reward~!")
     async def daily(self, ctx: commands.Context):
         """Claim your daily reward - choose between EXP or money.
         
