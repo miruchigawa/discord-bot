@@ -20,7 +20,7 @@ A kawaii-themed Discord bot featuring economy system, anime interactions, AI ima
    MONGO_URI=<your mongodb connection string>
    DB_NAME=<your database name>
    WAIFU_IT_TOKEN=<your waifu.it api token>
-   STABLE_DIFFUSION_URL=<your stable diffusion api url>
+   STABLE_DIFFUSION_URL=<your stable diffusion api url> (comma separated for multiple servers)
    ```
 6. Install dependencies
 7. Run the bot with `python main.py`
@@ -64,6 +64,7 @@ A kawaii-themed Discord bot featuring economy system, anime interactions, AI ima
 - `reload` - Reload specific cog (owner only)
 - `shell` - Execute shell commands (owner only)
 - `debug` - Evaluate Python code (owner only)
+- `addmoney` - Add money to a user or my self
 
 ## Creating Cogs
 Cogs help organize bot commands and listeners. Here's how to create a new cog:

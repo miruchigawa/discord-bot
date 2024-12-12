@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from lib.stablediffusion import StableDiffusion, SDConfig
 import io
-from typing import Dict, Set
+from typing import Dict, Set, Optional
 from config import Config
 import asyncio
 
@@ -19,9 +19,14 @@ class Wfx(commands.GroupCog, group_name="wfx"):
             The Discord bot instance
         """
         self.bot = bot
-        self.sd_client = StableDiffusion(Config.STABLE_DIFFUSION_URL)
+        self.sd_client = StableDiffusion(Config.STABLE_DIFFUSION_URL.split(","))
         self.active_users: Set[int] = set()
         self.generation_cost = 100
+        self._setup_task: Optional[asyncio.Task] = None
+
+    async def cog_load(self) -> None:
+        """Setup when cog is loaded."""
+        await self.sd_client.start()
 
     async def _check_user_eligibility(self, ctx: commands.Context) -> bool:
         """Check if user can generate an image.
@@ -210,7 +215,12 @@ class Wfx(commands.GroupCog, group_name="wfx"):
                 cfg_scale=cfg_scale
             )
 
-            images = await self.sd_client.text2img(config)
+            try:
+                images = await self.sd_client.text2img(config)
+            except RuntimeError as e:
+                await self.bot.db.add_money(ctx.author.id, ctx.guild.id, self.generation_cost)
+                await ctx.send("(｡•́︿•̀｡) Uwaaah! All the Stable Diffusion servers are taking a nap right now... Please try again later when they wake up! *pat pat*")
+                return
             
             image_data = io.BytesIO(images[0])
             file = discord.File(image_data, filename="generated.png")
