@@ -30,6 +30,7 @@ import base64
 from contextlib import asynccontextmanager
 import asyncio
 import random
+from utils.logger import Logger
 
 @dataclass
 class SDConfig:
@@ -94,7 +95,6 @@ class StableDiffusion:
     """
     
     def __init__(self, base_urls: Union[str, List[str]], timeout: int = 300, health_check_interval: int = 60):
-        # Convert single URL to list
         if isinstance(base_urls, str):
             base_urls = [base_urls]
             
@@ -103,6 +103,8 @@ class StableDiffusion:
         self.session: Optional[aiohttp.ClientSession] = None
         self.health_check_interval = health_check_interval
         self._health_check_task: Optional[asyncio.Task] = None
+        self.logger = Logger(name="stable_diffusion")
+
 
     @asynccontextmanager
     async def _session(self):
@@ -120,19 +122,18 @@ class StableDiffusion:
                 self.session = None
 
     async def _health_check(self, server: ServerInfo) -> bool:
-        """Check if a server is responsive.
-        
-        Args:
-            server (ServerInfo): Server to check
-            
-        Returns:
-            bool: True if server is alive
-        """
+        """Check if a server is responsive."""
         try:
             async with self._session() as session:
-                async with session.get(f"{server.url}/sdapi/v1/samplers") as response:
-                    return response.status == 200
-        except:
+                async with session.get(f"{server.url}") as response:
+                    is_alive = 200 <= response.status < 300
+                    if is_alive:
+                        self.logger.debug(f"✨ Health check passed for {server.url} ✨")
+                    else:
+                        self.logger.warning(f"⚠️ Health check failed for {server.url} with status {response.status} ⚠️")
+                    return is_alive
+        except Exception as e:
+            self.logger.error(f"❌ Health check failed for {server.url}: {str(e)} ❌")
             return False
 
     async def _start_health_checker(self):
@@ -144,19 +145,12 @@ class StableDiffusion:
             await asyncio.sleep(self.health_check_interval)
 
     async def _get_available_server(self) -> ServerInfo:
-        """Get a random available server or raise error if none available.
-        
-        Returns:
-            ServerInfo: Available server
-            
-        Raises:
-            RuntimeError: If no servers are available
-        """
-        # Filter alive servers
+        """Get a random available server or raise error if none available."""
+
         alive_servers = [s for s in self.servers if s.is_alive]
         
-        # If no alive servers, do immediate health check
         if not alive_servers:
+            self.logger.warning("🔄 No alive servers found, performing immediate health check... 🔄")
             for server in self.servers:
                 server.is_alive = await self._health_check(server)
                 server.last_checked = asyncio.get_event_loop().time()
@@ -164,9 +158,14 @@ class StableDiffusion:
                     alive_servers.append(server)
         
         if not alive_servers:
-            raise RuntimeError("No Stable Diffusion servers are available")
+            status = "\n".join([f"{s.url}: {'🟢 alive' if s.is_alive else '🔴 dead'}" for s in self.servers])
+            error_msg = f"❌ No Stable Diffusion servers are available. Server status:\n{status}"
+            self.logger.critical(error_msg)
+            raise RuntimeError(error_msg)
             
-        return random.choice(alive_servers)
+        selected_server = random.choice(alive_servers)
+        self.logger.debug(f"🎯 Selected server: {selected_server.url}")
+        return selected_server
 
     async def _api_request(self, endpoint: str, method: str = "GET", **kwargs) -> Dict[str, Any]:
         """Make an API request to an available Stable Diffusion server."""
@@ -182,36 +181,35 @@ class StableDiffusion:
         """Start the client and health checker."""
         if self.session is None:
             self.session = aiohttp.ClientSession(timeout=self.timeout)
+            self.logger.info("🌟 Created new aiohttp session 🌟")
+        
+        self.logger.info("🔍 Performing initial health check... 🔍")
+        for server in self.servers:
+            server.is_alive = await self._health_check(server)
+            server.last_checked = asyncio.get_event_loop().time()
         
         if self._health_check_task is None:
             self._health_check_task = asyncio.create_task(self._start_health_checker())
+            self.logger.info("✅ Started health checker task ✅")
 
     async def text2img(self, config: Union[SDConfig, Dict[str, Any]]) -> List[bytes]:
-        """Generate images from text prompt using Stable Diffusion.
-        
-        Args:
-            config (Union[SDConfig, Dict[str, Any]]): Generation parameters
-            
-        Returns:
-            List[bytes]: List of generated images as bytes
-            
-        Raises:
-            aiohttp.ClientError: If API request fails
-            ValueError: If config is invalid
-        """
+        """Generate images from text prompt using Stable Diffusion."""
         if isinstance(config, dict):
             payload = config
         elif isinstance(config, SDConfig):
             payload = config.to_dict()
         else:
-            raise ValueError("Config must be SDConfig or dict")
+            error_msg = "❌ Config must be SDConfig or dict"
+            self.logger.error(error_msg)
+            raise ValueError(error_msg)
 
+        self.logger.info(f"🎨 Generating image with prompt: {payload.get('prompt', '')[:50]}... ✨")
+        
         result = await self._api_request(
             "sdapi/v1/txt2img",
             method="POST",
             json=payload
         )
-        
         return [base64.b64decode(img) for img in result["images"]]
 
     async def get_samplers(self) -> List[Dict[str, str]]:
@@ -245,10 +243,12 @@ class StableDiffusion:
             except asyncio.CancelledError:
                 pass
             self._health_check_task = None
+            self.logger.info("🛑 Health checker task stopped 🛑")
             
         if self.session and not self.session.closed:
             await self.session.close()
             self.session = None
+            self.logger.info("👋 Session closed 👋")
 
     def __del__(self):
         """Ensure session and tasks are cleaned up on deletion."""

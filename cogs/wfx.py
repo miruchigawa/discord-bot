@@ -257,6 +257,7 @@ class Wfx(commands.GroupCog, group_name="wfx"):
     @commands.hybrid_command(
         description="Show available Stable Diffusion models"
     )
+
     async def models(self, ctx: commands.Context) -> None:
         """List all available Stable Diffusion models.
         
