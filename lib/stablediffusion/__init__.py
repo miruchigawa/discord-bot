@@ -130,7 +130,7 @@ class StableDiffusion:
                     if is_alive:
                         self.logger.debug(f"✨ Health check passed for {server.url} ✨")
                     else:
-                        self.logger.warning(f"⚠️ Health check failed for {server.url} with status {response.status} ⚠️")
+                        self.logger.debug(f"⚠️  Health check failed for {server.url} with status {response.status} ⚠️")
                     return is_alive
         except Exception as e:
             self.logger.error(f"❌ Health check failed for {server.url}: {str(e)} ❌")

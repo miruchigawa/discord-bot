@@ -220,7 +220,7 @@ class Admin(commands.Cog):
 
             await ctx.guild.unban(user_obj, reason=reason)
             embed = discord.Embed(
-                title="(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ Kawaii Unban Success!",
+                title="(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ Unban Success!",
                 description=f"Yatta! {user_obj.mention if hasattr(user_obj, 'mention') else user_obj} has been forgiven!\n💕 Reason: {reason}\n\n*jumps with joy* Time to celebrate!",
                 color=discord.Color.pink()
             )
