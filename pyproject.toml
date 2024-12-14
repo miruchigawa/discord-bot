@@ -11,4 +11,5 @@ dependencies = [
     "prompt-toolkit>=3.0.48",
     "psutil>=6.1.0",
     "python-dotenv>=1.0.1",
+    "watchdog>=6.0.0",
 ]

@@ -9,6 +9,7 @@ A kawaii-themed Discord bot featuring economy system, anime interactions, AI ima
 - Detailed logging system
 - MongoDB integration for data persistence
 - Interactive games with rewards (TicTacToe)
+- Hot reload for code changes (Debugging and Development)
 
 ## Setup
 1. Create a new Discord bot and get the token
@@ -24,7 +25,7 @@ A kawaii-themed Discord bot featuring economy system, anime interactions, AI ima
    STABLE_DIFFUSION_URL=<your stable diffusion api url> (comma separated for multiple servers)
    ```
 6. Install dependencies
-7. Run the bot with `python main.py`
+7. Run the bot with `python main.py` or `python watch.py` for debugging and development
 
 ## Project Structure
 | Folder/File | Description |
@@ -33,6 +34,7 @@ A kawaii-themed Discord bot featuring economy system, anime interactions, AI ima
 | `utils/` | Utility classes (database, logger, helper) |
 | `lib/` | External library wrappers (stablediffusion, waifuit, tickengine) |
 | `main.py` | Main bot initialization |
+| `watch.py` | Hot reload for code changes (Debugging and Development) |
 | `config.py` | Centralized configuration management |
 
 ## Available Commands
@@ -118,7 +120,6 @@ Cogs help organize bot commands and listeners. Here's how to create a new cog:
    - Add docstrings to your commands and classes
    - Handle errors appropriately
    - Use type hints consistently
-   - Follow the kawaii-themed message style
    - Implement proper permission checks
 
 ## License

@@ -158,9 +158,8 @@ class StableDiffusion:
                     alive_servers.append(server)
         
         if not alive_servers:
-            status = "\n".join([f"{s.url}: {'🟢 alive' if s.is_alive else '🔴 dead'}" for s in self.servers])
-            error_msg = f"❌ No Stable Diffusion servers are available. Server status:\n{status}"
-            self.logger.critical(error_msg)
+            error_msg = "❌ No Stable Diffusion servers are available."
+            self.logger.warning(error_msg)
             raise RuntimeError(error_msg)
             
         selected_server = random.choice(alive_servers)

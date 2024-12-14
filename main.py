@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 import os
-import asyncio
-import sys
 from utils.logger import Logger
 from utils.helper import Help
 from typing import Dict
