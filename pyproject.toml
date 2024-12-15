@@ -7,6 +7,8 @@ requires-python = ">=3.11"
 dependencies = [
     "aioconsole>=0.8.1",
     "discord-py>=2.4.0",
+    "langchain>=0.3.12",
+    "langchain-ollama>=0.2.1",
     "motor>=3.6.0",
     "prompt-toolkit>=3.0.48",
     "psutil>=6.1.0",
