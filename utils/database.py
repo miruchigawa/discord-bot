@@ -94,6 +94,7 @@ class Database:
         
         while exp >= exp_needed:
             level += 1
+            exp -= exp_needed
             exp_needed = int(exp_needed * 1.5)
         
         query = await self._get_user_query(user_id, guild_id)
