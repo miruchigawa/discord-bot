@@ -89,13 +89,16 @@ class Database:
         Returns:
             Updated user document
         """
-        level = 1
-        exp_needed = 100
+        query = await self._get_user_query(user_id, guild_id)
+        user = await self.db.users.find_one(query, { "_id": 0 })
+        level = user["level"]
+
+        exp_needed = 100 * level
         
         while exp >= exp_needed:
             level += 1
             exp -= exp_needed
-            exp_needed = int(exp_needed * 1.5)
+            exp_needed = 100 * level
         
         query = await self._get_user_query(user_id, guild_id)
         await self.db.users.update_one(
